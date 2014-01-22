@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:tx="http://www.springframework.org/schema/tx" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
+						http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.1.xsd
+						http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.1.xsd
+						http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.1.xsd">
+						
+	<util:properties id="dbProperties" location="classpath:mybatis/db.properties"/>
+  	
+    <bean id="dataSource" class="org.springframework.jdbc.datasource.SimpleDriverDataSource">
+        <property name="driverClass" value="#{dbProperties.jdbcDriver}"/>
+        <property name="url" value="#{dbProperties.jdbcUrl}"/>
+        <property name="username" value="#{dbProperties.jdbcUsername}"/>
+        <property name="password" value="#{dbProperties.jdbcPassword}"/>
+    </bean>
+
+	<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+	
+	<tx:advice id="txAdvice">
+        <tx:attributes>
+            <tx:method name="insert*" rollback-for="Throwable" propagation="REQUIRED"/>
+            <tx:method name="update*" rollback-for="Throwable" propagation="REQUIRED"/>
+            <tx:method name="delete*" rollback-for="Throwable" propagation="REQUIRED"/>
+            <tx:method name="get*" read-only="true"/>
+            <tx:method name="*" rollback-for="Throwable"/>
+        </tx:attributes>
+    </tx:advice>
+    
+	<!--AOP(Aspect Oriented Programming)-->
+	<aop:aspectj-autoproxy />
+	
+	<!-- proxy-target-class="true" 는 *Service가 인터페이스가 아닌 구현체 일 경우 사용 -->
+	<aop:config proxy-target-class="true">
+        <aop:advisor advice-ref="txAdvice" pointcut="execution(* *..*Service.*(..))"/>
+    </aop:config>
+    
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+		<property name="configLocation" value="classpath:mybatis/mybatis-config.xml" />
+		<property name="mapperLocations">
+			<list>
+				<!-- <value>classpath:com/osc/edu/**/*Mapper.xsql</value> -->
+				<!-- jar 파일 내의 resource는 **/* 로 탐색되지 않음. -->
+				<value>classpath:com/osc/edu/commons/customers/sql/CustomersMapper.xsql</value>
+				<value>classpath:com/osc/edu/commons/employees/sql/EmployeesMapper.xsql</value>
+			</list>
+		</property>
+	</bean>
+
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<!-- Mapper Scaning 시 Mapper interface와 Dao interface 간의 충돌이 발생 -->
+		<!-- annotationClass을 지정하거나 basePackage를 세분화 -->
+		<!-- property name="basePackage" value="com.osc.edu.commons.customers.mapper,com.osc.edu.commons.employees.mapper" /-->
+		<property name="basePackage" value="com.osc.edu" />
+		<property name="annotationClass" value="com.osc.edu.commons.annotation.SqlMapper" />
+	</bean>
+
+	<bean class="org.mybatis.spring.SqlSessionTemplate">
+		<constructor-arg ref="sqlSessionFactory" />
+	</bean>
+	
+	<bean id="customersDao" class="com.osc.edu.commons.customers.dao.impl.CustomersDaoImpl" />
+	<bean id="employeesDao" class="com.osc.edu.commons.employees.dao.impl.EmployeesDaoImpl" />
+	<bean id="customersService" class="com.osc.edu.commons.customers.service.CustomersService" />
+	<bean id="employeesService" class="com.osc.edu.commons.employees.service.EmployeesService" />
+	
+</beans>

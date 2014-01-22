@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.osc.edu.commons.customers.mapper.CustomersMapper">
+
+	<select id="getCustomersList" resultType="com.osc.edu.commons.customers.dto.CustomersDto">
+		SELECT CUSTOMER_ID AS customerId
+			   , CUSTOMER_NAME AS customerName
+		       , CONTACT_LASTNAME AS contactLastname
+		       , CONTACT_FIRSTNAME AS contactFirstname
+		       , PHONE AS phone
+		       , ADDRESS1 AS address1
+		       , ADDRESS2 AS address2
+		       , CITY AS city
+		       , STATE AS state
+		       , ZIPCODE AS zipcode
+		       , COUNTRY AS country
+		       , EMPLOYEE_ID AS employeeId
+		       , CREDIT_LIMIT AS creditLimit
+		  FROM CUSTOMERS
+	</select>
+	
+	<select id="getCustomers" parameterType="Integer" resultType="com.osc.edu.commons.customers.dto.CustomersDto">
+		SELECT CUSTOMER_ID AS customerId
+			   , CUSTOMER_NAME AS customerName
+		       , CONTACT_LASTNAME AS contactLastname
+		       , CONTACT_FIRSTNAME AS contactFirstname
+		       , PHONE AS phone
+		       , ADDRESS1 AS address1
+		       , ADDRESS2 AS address2
+		       , CITY AS city
+		       , STATE AS state
+		       , ZIPCODE AS zipcode
+		       , COUNTRY AS country
+		       , EMPLOYEE_ID AS employeeId
+		       , CREDIT_LIMIT AS creditLimit
+		  FROM CUSTOMERS
+		 WHERE CUSTOMER_ID = #{customerId}
+	</select>
+	
+	<insert id="insertCustomers" parameterType="com.osc.edu.commons.customers.dto.CustomersDto">
+		<selectKey keyProperty="customerId" resultType="int" order="BEFORE" statementType="PREPARED">
+			SELECT IFNULL(MAX(CUSTOMER_ID), 0) + 1
+			  FROM CUSTOMERS
+		</selectKey>
+		INSERT INTO CUSTOMERS (CUSTOMER_ID,CUSTOMER_NAME,CONTACT_LASTNAME,CONTACT_FIRSTNAME,PHONE
+								,ADDRESS1,ADDRESS2,CITY,STATE,ZIPCODE,COUNTRY,EMPLOYEE_ID,CREDIT_LIMIT) 
+		VALUES (#{customerId}, #{customerName}, #{contactLastname}, #{contactFirstname}, #{phone}
+				, #{address1}, #{address2}, #{city}, #{state}, #{zipcode}, #{country}, #{employeeId}, #{creditLimit}) 
+	</insert>
+	
+	<update id="updateCustomers" parameterType="com.osc.edu.commons.customers.dto.CustomersDto">
+		UPDATE CUSTOMERS
+		   SET CUSTOMER_NAME = #{customerName}
+		       , CONTACT_LASTNAME = #{contactLastname}
+		       , CONTACT_FIRSTNAME = #{contactFirstname}
+		       , PHONE = #{phone}
+		       , ADDRESS1 = #{address1}
+		       , ADDRESS2 = #{address2}
+		       , CITY = #{city}
+		       , STATE = #{state}
+		       , ZIPCODE = #{zipcode}
+		       , COUNTRY = #{country}
+		       , EMPLOYEE_ID = #{employeeId}
+		       , CREDIT_LIMIT = #{creditLimit}
+		 WHERE CUSTOMER_ID = #{customerId}
+	</update>
+
+	<delete id="deleteCustomers" parameterType="Integer">
+		DELETE FROM CUSTOMERS
+		 WHERE CUSTOMER_ID = #{customerId}
+	</delete>
+</mapper>
